@@ -233,3 +233,62 @@ print(weather_deltas.describe())
 
 print("####Section 7")
 
+#%% md
+#### Exercise 1
+#Suppose I have a list of strings:
+
+string_list = ['Python', 'is', 'fun']
+print(" ".join(string_list))
+
+#regex
+
+import re
+
+
+hem_string = 'He was an old man who  fished alone in a\n skiff in the  Gulf Stream and he had  gone eighty-four days \tnow without taking a fish.'
+print(hem_string)
+
+test = re.split('\s',hem_string)
+print(test)
+print(re.split('\s+',hem_string))
+
+#Exercise 2
+
+#%% md
+#### Exercise 2
+#Suppose I have a list of filenames and I want to extract all the file extensions (the values after the .)
+
+files = ['lecture_9_code.py', 'graphs.jpeg', 'lecture_9.pdf', 'lecture9a.mp4']
+
+#extensions = re.findall('\.\w+',str(files))
+#print(x.strip('.') for x in extensions)
+#print(extensions)
+
+#print([re.findall(('\.\w+'),x) for x in files])
+
+#%% md
+#### Exercise 2
+
+
+#Which of the following will split the filenames everywhere there's a full stop? (Select all that apply)
+#print([re.findall('.',x) for x in files])
+print([re.split('[\W]',x) for x in files])
+#re.split('[.]',files)
+#print([re.split('[.]',x) for x in files])
+#re.split('[\W]',files)
+
+#Exercise 6
+#%% md
+#### Exercise 6
+#Write a piece of code to replace all instances of the word 'and' in
+# the following string with '&'. Be sure to only replace 'and' when it
+# appears as a word on its own and not as part of another word.
+#
+ex6 = "Amanda and Martin went to the beach and they built sand castles."
+
+print(re.sub('(\sand\s)',' & ',ex6))
+
+
+
+
+
