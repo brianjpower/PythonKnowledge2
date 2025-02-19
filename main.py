@@ -201,3 +201,35 @@ final_grades = Series(grades.apply(final_grade,axis=1)).sort_values(ascending=Fa
 print(grades.apply(final_grade,axis=1))
 print(final_grades)
 print(final_grades.iloc[0])
+
+#Additional Exercises
+weather = pd.read_csv(path+'weather.csv',index_col='date')
+weather_orig = weather.copy()
+print(weather.head())
+print(weather.describe())
+weather.mean_temp = weather.mean_temp.fillna(weather.mean_temp.mean())
+weather.max_temp = weather.max_temp.fillna(weather.max_temp.mean())
+weather.min_temp = weather.min_temp.fillna(weather.min_temp.mean())
+weather.rain=weather.rain.fillna(weather.rain.mean())
+print(weather.describe())
+print(weather_orig.describe())
+print((weather.describe() - weather_orig.describe()).round(2))
+##%% md
+#Using the `sort_values` method, or otherwise, find the months with the most rain. Give the month and year of the 3rd wettest month in this dataset.
+print(weather.rain.sort_values(ascending=False).head(3))
+def sub_means(x):
+    return x - x.mean()
+
+print(weather.apply(sub_means))
+
+weather_deltas = weather.apply(sub_means)
+
+print(weather_deltas.describe())
+
+
+
+#############################################Section 7################################################
+######################String manip and reg expressions################################################
+
+print("####Section 7")
+
