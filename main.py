@@ -289,6 +289,198 @@ ex6 = "Amanda and Martin went to the beach and they built sand castles."
 print(re.sub('(\sand\s)',' & ',ex6))
 
 
+#############################################Section 8################################################
+############################################Data Wrangling############################################
 
+print("#########Section 8##############")
+
+#####  Merging dataframes
+
+#%% md
+#### Exercise 1
+#Suppose I want to merge the DataFrames below on both id and sex, but to keep all the IDs in the resulting DataFrame. Which is the best command?
+
+#* `pd.merge(df_1,df_2)`
+#* `pd.merge(df_1,df_2,on=['id'],how='outer')`
+#* `pd.merge(df_1,df_2,on=['id','sex'],how='outer')`
+#* `pd.merge(df_1,df_2,on=['id','sex'],how='right')`
+
+
+
+df_1 = DataFrame({'id':range(134,139),'sex':['male','male','female','female','male'],'age':[36,21,53,33,29]})
+df_2 = DataFrame({'id':range(135,139),'sex':['male','female','female','male'],'party':['FG','FF','SF','FF']})
+
+df1_and_df2 = pd.merge(df_1,df_2, on=['id','sex'],how='outer')
+print(df1_and_df2)
+####### Other ways to combine dataframes
+#Can also stack datasets one on top of the other or join them side by side rather than merging
+summer_dict = {'Year': [2015, 2016, 2017, 2018, 2019, 2020] ,'mean_temp': [19,17,20,16,17,18],
+    'max_temp': [25,20,27,21,22,25],'min_temp': [10,12,8,9,10,11]}
+summer_df = DataFrame(summer_dict,index=summer_dict['Year'])
+winter_dict = {'Year': [2012, 2013, 2014,2015,2016],'mean_temp': [13,12,15,10,9],
+    'max_temp': [18,16,20,14,14],'min_temp': [2,0,-1,0,-2],'mean_rain': [2,4,5,4,3]}
+winter_df = DataFrame(winter_dict,index=winter_dict['Year'])
+print(summer_df,'\n')
+print(winter_df,'\n')
+
+summer_winter_stack_df = pd.concat([summer_df,winter_df],sort=True)
+print(summer_winter_stack_df)
+
+summer_winter_join = summer_df.join(winter_df,lsuffix='_winter',rsuffix='_summer')
+print(summer_winter_join)
+
+
+#Excercise 2
+
+#%% md
+
+##### Duplicates
+
+#Exercise 3
+#%% md
+#### Exercise 3
+#Load in the diamonds dataset from Week 5 and determine how many duplicate rows there are.
+#print(diamonds_df)
+
+
+print(diamonds_df.duplicated().sum())
+##### Mapping and replacing
+
+#my_map = {1:'Under 18',18:'18-24',25:'25-34',35:'35-44',45:'45-49',50:'50-55',56:'56+'}
+#users['age_grp'] = users['age'].map(my_map)
+#print(users.head())
+
+path = 'C:/Users/brian/OneDrive/Documents/MSC Data Analytics/Data Prog with Python/Week-8-data/'
+ratings = pd.read_csv(path + 'ratings.dat',sep='::',engine='python',names=['user_id','movie_id','rating','timestamp'])
+#path='C:/Users/brian/OneDrive/Documents/MSC Data Analytics/Data Prog with Python/Week-8-data/'
+#ratings = pd.read_csv(path+'ratings.dat',sep='::',names=['user_id','movie_id','rating','timestamp'],engine='python')
+
+print(ratings.head())
+
+ratings_map = {1:'Really Bad',2:'Bad',3:'Average',4:'Good',5:'Very Good'}
+
+#ratings['critique'] = ratings['rating'].map(ratings_map)
+#print(ratings)
+
+ratings['rating_1'] = ratings['rating'].map(ratings_map)
+print(ratings)
+
+ratings['rating_2'] = ratings['rating'].map(lambda x: ratings_map[x])
+print(ratings)
+
+
+##### Cutting Values
+
+npr.seed(111)
+ages = Series(npr.poisson(lam=30,size=100))
+bins = [0,20,40,60]
+age_groups = pd.cut(ages,bins)
+#print(age_groups)
+
+#age_groups_4 = pd.cut(ages,4)
+#print(pd.value_counts(age_groups_4))
+
+npr.seed(27)
+x = Series(npr.randint(0,100,1000))
+
+print(x)
+
+
+#print(movie_cuts)
+
+"""
+import pandas as pd
+
+df = pd.DataFrame({'Age': [45, 60, 15, 30], 'Diabetes': [0, 1, 0, 1]})
+print(df)
+#print(df.loc[df['Age'] > 40]['Diabetes'].mean())
+print(df[df['Age']>40]['Diabetes'].mean())
+print(df.loc[df['Age']>40])
+
+
+import pandas as pd
+
+df = pd.DataFrame({
+'Weight': [45, 88, 56, 15, 71],
+'Name': ['Sam', 'Andrea', 'Alex', 'Robin', 'Kia'],
+'Age': [14, 25, 55, 8, 21]
+}, index=['Row_1', 'Row_2', 'Row_3', 'Row_4', 'Row_5'])
+
+result = df.loc['Row_2', 'Name']
+print(result) # Output: Andrea
+print(df)
+result2 = df.loc[:,['Weight', 'Name']]
+print(result2)
+
+print(df.loc[df['Age'] < 20]['Weight'].mean())
+print(df.loc[df['Age'] > 20]['Weight'].mean())
+#print(result)
+"""
+
+##### Dummy Values
+
+bins = [0,20,40,60,80,100]
+int_cut = pd.cut(x,bins)
+print(int_cut.value_counts())
+age_30 = pd.cut(ages,[0,30,100],labels=['Under 30','over 30'])
+print(pd.get_dummies(age_30).head(10))
+#%% md
+#### Exercise 6
+#Use a combination of the `cut` and `get_dummies` commands to create set of dummy variables
+# *Bad* and *Good* for the movie ratings data.
+# The dummy variable *Bad* should be 1 if the rating is 2 or less and 0 otherwise,
+# while the dummy variable *Good* should be 1 if the rating is 3 or more and 0 otherwise.
+movie_cuts = pd.cut(ratings['rating'],bins=[0,2,5],labels=['bad','good'])
+print(pd.get_dummies(movie_cuts).tail(20))
+print(ratings.tail(20))
+
+##### Standardising Data
+
+#To standardise a dataset we refactor it such that it isn't a raw magnitude but rather represented as the number of
+#standard deviations form the mean.  To do this, we take the dataset, subtract all the means from the raw data
+#and the divide this by that columns standard deviation
+
+print(summer_df)
+print(summer_df.describe())
+summer_df_standard = (summer_df[['mean_temp','max_temp','min_temp']] - summer_df[['mean_temp','max_temp','min_temp']].mean() ) / summer_df[['mean_temp','max_temp','min_temp']].std()
+print(summer_df_standard)
+#print((summer_df[['mean_temp','max_temp','min_temp']] - summer_df[['mean_temp','max_temp','min_temp']].mean())/summer_df[['mean_temp','max_temp','min_temp']].std())
+
+
+##%% md
+#A new medical test is in development for detecting Ebola that is much faster,
+# though less accurate, than that currently available. The new test has been applied to
+# some patients who are known (from the old test) to have the disease or not.
+# The results of these patients are available in `ebola_test.csv`.
+# The first column of this data set (called `prob`) is the probabiliy under the new test that the
+# patient has Ebola. The second column (`ebola`) is the result from the older test which definitively
+# says whether the  patient has ebola (`ebola = 1`) or not (`ebola=0`).
+
+#Begin by loading in the data and having a look at it.
+
+ebola_test = pd.read_csv(path+'ebola_test.csv')
+print(ebola_test.head(20))
+print(ebola_test.tail(20))
+num_infected = ebola_test[ebola_test['ebola']==1].count()[0]
+print(num_infected)
+perc_infected = (num_infected/ebola_test.count()[0])*100
+print(f"The percentage of patients infected is {perc_infected.round(2)}%")
+
+
+#Now let's make a cutoff of the prob data and use this to predict infection.  Let's choose a cut-off of
+#0.15 and calculcate the false postive and false negative rates.  Try to tune the cut-off then with ROC?
+
+my_cutoff = [0,0.15,1]
+ebola_test['pred'] = pd.cut(ebola_test['prob'],my_cutoff,labels=[0,1])
+print(ebola_test)
+
+false_positive = ((ebola_test[(ebola_test['pred']==1) & (ebola_test['ebola']==0)].count()[0]) / (ebola_test[(ebola_test['pred']==1) & (ebola_test['ebola']==0)].count()[0] + ebola_test[ebola_test['ebola']==0].count()[0]))*100
+print(f"The false_positive rate is {false_positive}%")
+false_negative = ((ebola_test[(ebola_test['pred']==0) & (ebola_test['ebola']==1)].count()[0]) / (ebola_test[(ebola_test['pred']==0) & (ebola_test['ebola']==1)].count()[0] + ebola_test[ebola_test['ebola']==1].count()[0]))*100
+print(f"The false negative rate is {false_negative}%")
+#/ (ebola_test[ebola_test['pred']==1].count()[0] + ebola_test[ebola_test['pred']==0].count()[0])
+#false_negative = ebola_test[ebola_test['pred']==0].count()[0] / (ebola_test[ebola_test['pred']==1].count()[0] + ebola_test[ebola_test['pred']==0].count()[0])
+#print(f"The false positive rate is {false_positive*100}%")
+#print(f"The false negative rate is {false_negative*100}%")
 
 
