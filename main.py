@@ -478,9 +478,119 @@ false_positive = ((ebola_test[(ebola_test['pred']==1) & (ebola_test['ebola']==0)
 print(f"The false_positive rate is {false_positive}%")
 false_negative = ((ebola_test[(ebola_test['pred']==0) & (ebola_test['ebola']==1)].count()[0]) / (ebola_test[(ebola_test['pred']==0) & (ebola_test['ebola']==1)].count()[0] + ebola_test[ebola_test['ebola']==1].count()[0]))*100
 print(f"The false negative rate is {false_negative}%")
+
+def FPR(cutoff):
+    my_cutoff = [0, cutoff, 1]
+    ebola_test['pred'] = pd.cut(ebola_test['prob'], my_cutoff, labels=[0, 1])
+    return ((ebola_test[(ebola_test['pred']==1) & (ebola_test['ebola']==0)].count()[0]) / (ebola_test[(ebola_test['pred']==1) & (ebola_test['ebola']==0)].count()[0] + ebola_test[ebola_test['ebola']==0].count()[0]))*100
+
+print(FPR(0.10))
+
+
+def FPR_new(dataframe, cutoff, col):
+    my_cutoff = [0, cutoff, 1]
+    dataframe['pred'] = pd.cut(dataframe[col], my_cutoff, labels=[0, 1])
+    return ((dataframe[(dataframe['pred']==1) & (dataframe['ebola']==0)].count()[0]) / (dataframe[(dataframe['pred']==1) & (dataframe['ebola']==0)].count()[0] + dataframe[dataframe['ebola']==0].count()[0]))*100
+
+print(FPR_new(ebola_test,0.17,'prob'))
+
+def FNR(dataframe, cutoff, col):
+    my_cutoff = [0, cutoff, 1]
+    dataframe['pred'] = pd.cut(dataframe[col], my_cutoff, labels=[0, 1])
+    return ((dataframe[(dataframe['pred']==0) & (dataframe['ebola']==1)].count()[0]) / (dataframe[(dataframe['pred']==0) & (dataframe['ebola']==1)].count()[0] + dataframe[dataframe['ebola']==1].count()[0]))*100
+
+print(FNR(ebola_test,0.15,'prob'))
+
+
+
+def find_min_fpr(list_of_cuts):
+    list_of_fpr = []
+    min_fpr = 100
+    min_cut = 0
+    for i in list_of_cuts:
+        list_of_fpr.append(FPR_new(ebola_test,i,'prob'))
+        if FPR_new(ebola_test,i,'prob') < min_fpr:
+            min_fpr = FPR_new(ebola_test,i,'prob')
+            min_cut = i
+    min_fpr = min(list_of_fpr)
+    return min_fpr, min_cut
+    #return list_of_fpr
+
+def find_min_fnr(list_of_cuts):
+    list_of_fnr = []
+    min_fnr = 100
+    min_cut = 0
+    for i in list_of_cuts:
+        list_of_fnr.append(FNR(ebola_test,i,'prob'))
+        if FNR(ebola_test,i,'prob') < min_fnr:
+            min_fnr = FNR(ebola_test,i,'prob')
+            min_cut = i
+    min_fnr = min(list_of_fnr)
+    return min_fnr, min_cut
+"""
+print(np.array(list(np.arange(0.15,0.3,0.001))))
+print(find_min_fpr(list(np.arange(0.15,0.17,0.001))))
+print(FPR_new(ebola_test,0.17,'prob'))
+print(find_min_fnr(list(np.arange(0.1,0.3,0.001))))
+print(FNR(ebola_test,0.1,'prob'))
+
+"""
 #/ (ebola_test[ebola_test['pred']==1].count()[0] + ebola_test[ebola_test['pred']==0].count()[0])
 #false_negative = ebola_test[ebola_test['pred']==0].count()[0] / (ebola_test[ebola_test['pred']==1].count()[0] + ebola_test[ebola_test['pred']==0].count()[0])
 #print(f"The false positive rate is {false_positive*100}%")
 #print(f"The false negative rate is {false_negative*100}%")
+
+#%% md
+#A related concept to the choice of cut-offs is the Receiver Operator Characteristic (ROC) curve.
+#The ROC curve aims to quantify how well a classifier beats a random classifier for any level of
+#probability cut-off. An introduction can be found here: http://en.wikipedia.org/wiki/Receiver_operating_characteristic
+#The idea is to plot the false positive rate against the true positive rate for every cut-off value.
+
+#Your final task is to write a piece of code to compute the ROC curve.
+#Your ROC curve code should perform the following steps
+
+#1. Find the unique values in the probability column
+#2. Use each of these unique values as a cutoff value and <br>
+#a. Classify all the obs as either positive or negative based on the current cutoff value<br>
+#b. Calculate the false positive rate (FPR) and true positive rate (TPR)<br>
+#3. Plot the false positive rate versus true positive rate.
+
+#**Note 1:** FPR and TPR must be arrays/Series of the same length as the array/Series of unique values<br>
+#**Note 2:** Be careful that you calculate FPR and FNR correctly when at the largest unique probability value<br>
+
+list_of_cuts = np.sort(ebola_test['prob'].unique())
+print(list_of_cuts)
+fpr = []
+tpr = []
+
+for cutoff in list_of_cuts:
+    ebola_test['pred'] = pd.cut(ebola_test['prob'], [0, cutoff, 1], labels=[0, 1])
+    true_pos = ebola_test[(ebola_test['pred']==1) & ebola_test['ebola']==1].count()[0]
+    true_neg = ebola_test[(ebola_test['pred']==0) & ebola_test['ebola']==0].count()[0]
+    false_pos = ebola_test[(ebola_test['pred']==1) & ebola_test['ebola']==0].count()[0]
+    false_neg = ebola_test[(ebola_test['pred']==0) & ebola_test['ebola']==1].count()[0]
+
+    fpr.append(false_pos/(false_pos + true_neg))
+    tpr.append(true_pos/(true_pos + false_neg))
+
+ # Plot the ROC curve
+print(fpr)
+print(tpr)
+print(list_of_cuts)
+import matplotlib.pyplot as plt
+plt.plot(fpr, tpr)
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Receiver Operating Characteristic')
+plt.show()
+
+
+
+#print(fpr)
+
+
+
+
+
 
 
